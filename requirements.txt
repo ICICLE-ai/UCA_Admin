@@ -1,0 +1,9 @@
+fastapi
+uvicorn[standard]
+requests
+pyjwt
+pymongo
+tapipy
+pyyaml
+huggingface_hub
+patra-toolkit
