@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Kafka Message Stream</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        #connection-form {
+            margin-bottom: 20px;
+        }
+        #topicInput {
+            padding: 8px;
+            width: 250px;
+        }
+        button {
+            padding: 8px 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        #output-box {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            height: 400px;
+            overflow-y: auto;
+            padding: 10px;
+            background-color: #f9f9f9;
+            margin-top: 10px;
+        }
+        .message-item {
+            border-bottom: 1px solid #eee;
+            padding: 8px 0;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+<h1>Kafka Message Stream</h1>
+
+<div id="connection-form">
+    <input type="text" id="topicInput" placeholder="Enter topic name" autocomplete="off"/>
+    <button onclick="connectWebSocket()">Connect</button>
+</div>
+
+<div id="stream-container" style="display: none;">
+    <h3>Stream from topic: <span id="current-topic"></span></h3>
+    <div id="output-box"></div>
+</div>
+
+<script>
+    var ws = null;
+
+    function connectWebSocket() {
+        var topicInput = document.getElementById('topicInput');
+        var topicName = topicInput.value.trim();
+
+        if (!topicName) {
+            alert("Please enter a topic name");
+            return;
+        }
+
+        // Create WebSocket connection with the topic
+        // ws = new WebSocket("wss://icicle-uca-dev-1.tacc.cloud/kafka/ws/" + topicName);
+        ws = new WebSocket("ws://localhost:8000/kafka/ws/" + topicName);
+
+        // Show current topic
+        document.getElementById('current-topic').textContent = topicName;
+
+        // Show stream container
+        document.getElementById('stream-container').style.display = 'block';
+
+        ws.onmessage = function(event) {
+            var outputBox = document.getElementById('output-box');
+            var messageItem = document.createElement('div');
+            messageItem.className = 'message-item';
+
+            try {
+                // Try to parse and format JSON
+                const data = JSON.parse(event.data);
+                messageItem.textContent = JSON.stringify(data, null, 2);
+            } catch (e) {
+                // If not JSON, just display as is
+                messageItem.textContent = event.data;
+            }
+
+            outputBox.appendChild(messageItem);
+            outputBox.scrollTop = outputBox.scrollHeight; // Auto-scroll to bottom
+        };
+
+        ws.onopen = function() {
+            var outputBox = document.getElementById('output-box');
+            var connectionMessage = document.createElement('div');
+            connectionMessage.className = 'message-item';
+            connectionMessage.textContent = "Connected to topic: " + topicName;
+            outputBox.appendChild(connectionMessage);
+        };
+
+        ws.onclose = function() {
+            var outputBox = document.getElementById('output-box');
+            var closeMessage = document.createElement('div');
+            closeMessage.className = 'message-item';
+            closeMessage.textContent = "Connection closed";
+            outputBox.appendChild(closeMessage);
+        };
+
+        ws.onerror = function(error) {
+            console.error('WebSocket error:', error);
+            alert("Error connecting to WebSocket. Check console for details.");
+        };
+    }
+</script>
+</body>
+</html>

@@ -1,6 +1,0 @@
-# MongoDB creds
-mongo_uri: "mongodb+srv://Gautam_Molakalmuru:iciclemongo@harp.afryura.mongodb.net/"
-rules_db: "IMT_Rules_engine_database"
-
-# Tapis creds
-tapis_url: "https://tacc.tapis.io"
